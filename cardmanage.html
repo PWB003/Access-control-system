@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Card Management System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+<div class="container mt-5">
+    <h1 class="text-center mb-4">Card Management System</h1>
+    <div class="alert alert-warning" id="login-warning" style="display: none;">
+        请重新登录以继续操作。
+    </div>
+    <div class="alert alert-danger" id="error-message" style="display: none;"></div>
+    <div class="alert alert-success" id="success-message" style="display: none;"></div>
+
+    <div class="card shadow">
+        <div class="card-body">
+            <form id="card-form">
+                <div class="mb-3">
+                    <label for="username" class="form-label">用户名</label>
+                    <input type="text" class="form-control" id="username" name="username" placeholder="请输入用户名" required>
+                </div>
+                <div class="mb-3">
+                    <label for="action" class="form-label">操作</label>
+                    <select class="form-select" id="action" name="action" required>
+                        <option value="" disabled selected>请选择操作</option>
+                        <option value="1">添加卡</option>
+                        <option value="0">删除卡</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary w-100">提交</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $('#card-form').on('submit', function (e) {
+            e.preventDefault();
+
+            // Hide all messages before sending request
+            $('#login-warning').hide();
+            $('#error-message').hide();
+            $('#success-message').hide();
+
+            const username = $('#username').val();
+            const action = $('#action').val();
+
+            if (!username || !action) {
+                $('#error-message').text('所有字段均为必填项！').show();
+                return;
+            }
+
+            $.ajax({
+                url: 'cardmanage.php?select=' + action, // 替换为实际 PHP 脚本路径
+                type: 'POST',
+                data: { username: username },
+                dataType: 'text',
+                success: function (response) {
+                    // Check for the "请重新登录" message in the response
+                    if (response.includes('请重新登录')) {
+                        $('#login-warning').show();
+                        // Redirect to login page after a short delay
+                        setTimeout(function() {
+                            window.location.href = "login.html";  // Replace with your actual login page
+                        }, 2000); // 2 seconds delay before redirect
+                    } else if (response.includes('失败')) {
+                        $('#error-message').text(response).show();
+                    } else {
+                        $('#success-message').text(response).show();
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $('#error-message').text('服务器错误：' + error).show();
+                }
+            });
+        });
+    });
+</script>
+</body>
+</html>
+

@@ -1,0 +1,199 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+        .container {
+            text-align: center;
+            margin-top: 50px;
+        }
+        .options {
+            margin: 20px 0;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            cursor: pointer;
+        }
+        #addModal, #deleteModal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            z-index: 1000;
+        }
+        #overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+    </style>
+    <script>
+        window.onload = async function() {
+            try {
+                const response = await fetch('index.php');
+                const result = await response.text();
+
+                if (result.includes('欢迎')) {
+                    // 回显 "欢迎"，允许继续访问
+                    console.log('访问成功: ' + result);
+                } else if (result.includes('请重新登录')) {
+                    // 回显 "请重新登录"，跳转到 login.html
+                    alert('请重新登录');
+                    window.location.href = 'login.html';
+                } else {
+                    console.error('未知响应: ' + result);
+                }
+            } catch (error) {
+                console.error('访问失败:', error);
+            }
+        };
+        function showAddModal() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('addModal').style.display = 'block';
+        }
+        function showDeleteModal() {
+            document.getElementById('overlay').style.display = 'block';
+            document.getElementById('deleteModal').style.display = 'block';
+        }
+
+        function closeAddModal() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('addModal').style.display = 'none';
+        }
+        function closeDeleteModal() {
+            document.getElementById('overlay').style.display = 'none';
+            document.getElementById('deleteModal').style.display = 'none';
+        }
+
+        async function submitAddForm() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username && password) {
+                const response = await fetch(`usermanage.php?select=1`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `newusername=${encodeURIComponent(username)}&newpassword=${encodeURIComponent(password)}`
+                });
+
+                const result = await response.text();
+
+                if (result.includes('数据库连接失败')) {
+                    alert('数据库连接失败');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else if (result.includes('无权管理用户')) {
+                    alert('无权添加用户');
+                } else if (result.includes('请重新登陆')) {
+                    window.location.href = 'login.html';
+                } else if (result.includes('无法注册新管理员')) {
+                    alert('无法注册新管理员');
+                } else if (result.includes('已存在该用户')) {
+                    alert('已存在该用户');
+                } else if (result.includes('创建成功')) {
+                    alert('创建成功');
+                } else {
+                    alert(result);
+                }
+
+                closeAddModal();
+            } else {
+                alert('请输入用户名和密码');
+            }
+        }
+
+        async function submitDeleteForm() {
+            console.log("submitDeleteForm called"); // 确认函数调用
+            const delUsername = document.getElementById('delUsername').value;
+
+            if (delUsername) {
+                const response = await fetch(`usermanage.php?select=2`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: `dusername=${encodeURIComponent(delUsername)}`
+                });
+
+                const result = await response.text();
+                console.log(result); // 检查 PHP 响应
+
+                if (result.includes('数据库连接失败')) {
+                    alert('数据库连接失败');
+                    setTimeout(() => {
+                        window.location.href = 'index.html';
+                    }, 1000);
+                } else if (result.includes('无权管理用户')) {
+                    alert('无权删除用户');
+                } else if (result.includes('请重新登陆')) {
+                    window.location.href = 'login.html';
+                } else if (result.includes('无法删除管理员')) {
+                    alert('无法删除管理员');
+                } else if (result.includes('不存在该用户')) {
+                    alert('不存在该用户');
+                } else if (result.includes('删除成功')) {
+                    alert('删除成功');
+                } else {
+                    alert(result);
+                }
+
+                closeDeleteModal();
+            } else {
+                alert('请输入用户名');
+            }
+        }
+
+    </script>
+</head>
+<body>
+<h1>欢迎 admin</h1>
+<div class="container">
+    <div class="options">
+        <button onclick="showAddModal()">添加用户</button>
+        <button onclick="showDeleteModal()">删除用户</button>
+    </div>
+</div>
+
+<div id="overlay" onclick="closeAddModal(); closeDeleteModal();"></div>
+
+<div id="addModal">
+    <h2>添加用户</h2>
+    <label for="username">用户名:</label><br>
+    <input type="text" id="username" name="username"><br><br>
+    <label for="password">密码:</label><br>
+    <input type="password" id="password" name="password"><br><br>
+    <button onclick="submitAddForm()">提交</button>
+    <button onclick="closeAddModal()">取消</button>
+</div>
+
+<div id="deleteModal">
+    <h2>删除用户</h2>
+    <label for="delUsername">用户名:</label><br>
+    <input type="text" id="delUsername" name="delUsername"><br><br>
+    <button onclick="submitDeleteForm()">提交</button>
+    <button onclick="closeDeleteModal()">取消</button>
+</div>
+
+</body>
+</html>
+

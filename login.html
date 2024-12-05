@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>门禁系统登录</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/crypto-js/4.1.1/crypto-js.min.js"></script>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-image: url('image/login.jpg'); /* 可配置的背景图片路径 */
+            background-size: cover;
+            background-position: center;
+        }
+        .login-container {
+            background-color: rgba(255, 255, 255, 0.9);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 300px;
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+        }
+        .login-container form {
+            display: flex;
+            flex-direction: column;
+        }
+        .login-container label,
+        .login-container input,
+        .login-container button {
+            margin-bottom: 10px;
+        }
+        .register-link {
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <h2>门禁系统登录</h2>
+        <form id="loginForm" action="login.php" method="POST" onsubmit="encryptPassword()">
+            <label for="username">用户名:</label>
+            <input type="text" id="username" name="username" required><br>
+            
+            <label for="password">密码:</label>
+            <input type="password" id="password" name="password" required><br>
+            
+            <button type="submit">登录</button>
+            <a href="register.html" class="register-link">注册用户</a>
+        </form>
+    </div>
+
+    <script>
+        function encryptPassword() {
+            const passwordField = document.getElementById('password');
+            const password = passwordField.value;
+            
+            // MD5 encryption
+            const encryptedPassword = CryptoJS.MD5(password).toString();
+            
+            // Set the encrypted password as the value
+            passwordField.value = encryptedPassword;
+        }
+    </script>
+</body>
+</html>
